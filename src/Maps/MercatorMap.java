@@ -18,8 +18,6 @@ import System.StringUtils;
  * References:
  * http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
  *
- * Known bugs:
- * Doesn't handle wrapping around longitude -180/179
  */
 public class MercatorMap implements IMapProvider {
     private IImageLoader imageLoader = null;
@@ -30,7 +28,7 @@ public class MercatorMap implements IMapProvider {
     private static final int ZOOM_MIN = 6;
 
     // Depending on map source, this value varies. 14 would be safe for most
-    // maps.
+    // maps. 18 is the closest zoom seen in the wild.
     private static final int ZOOM_MAX = 18;
 
     // fixme: OSM's mapnik maps are hardcoded, and these don't belong here!
@@ -42,8 +40,11 @@ public class MercatorMap implements IMapProvider {
     // fixme: add format detection
     private static final String mapTileFormat=".png";
 
-    /*
-     * source is an URL typically in the form
+    /**
+     * Perform some checks to see if a map server source string is properly
+     * formatted.
+     *
+     * @param source is an URL typically in the form
      * http://maps.url/?x=[X]&y=[Y]&z=[Z] or
      * http://maps.url/[Z]/[X]/[Y].png
      *
@@ -52,9 +53,13 @@ public class MercatorMap implements IMapProvider {
      * An other client uses [INVZ] which in fact is NOT inverted. URLs formatted
      * for that client needs to drop "INV" for those URLs to work with Catcher.
      *
-     * Returns true if map source is valid.
+     * @param id is a map source identifier, used as foldername on disk and
+     * screen name.
+     *
+     * @return true if map source is valid.
      * Note that this function does not check if the maps are available or even
      * if the domain exists.
+     *
      */
     public boolean isValidMapSource(String source, String id) {
         // We have this input validation here in case the settings file is
@@ -69,29 +74,67 @@ public class MercatorMap implements IMapProvider {
         return false;
     }
 
+    /**
+     * fixme: Find a better way to get the image loader. We don't want to store
+     * a reference to it in this class.
+     *
+     * @param imageLoader is a reference to the image loader responsible for
+     * getting map tiles.
+     */
     public MercatorMap(IImageLoader imageLoader) {
         this.imageLoader = imageLoader;
     }
 
+    /**
+     * Increases the zoom factor if possible.
+     * @param zoom is the current zoom factor.
+     * @return new zoom factor.
+     */
     public int zoomIn(int zoom) {
         return (zoom < ZOOM_MAX? ++zoom:ZOOM_MAX);
     }
 
+    /**
+     * Decreases the zoom factor if possible.
+     * @param zoom is the current zoom factor.
+     * @return new zoom factor.
+     */
     public int zoomOut(int zoom) {
         return (zoom > ZOOM_MIN? --zoom:ZOOM_MIN);
     }
 
+    /**
+     * Converts a position on a map in pixels to WGS84 coordinates.
+     *
+     * @param x The horizontal position in pixels on the map.
+     * @param y The vertical position in pixels on the map.
+     * @param center    Current map center in WGS84 datum.
+     * @param mapWidth  Current map width.
+     * @param mapHeight Current map height.
+     * @param zoom      Current map zoom factor.
+     * @return WGS84 coordinates of x and y.
+     */
     public Position XYtoPosition(int x, int y, Position center, int mapWidth,
             int mapHeight, int zoom) {
         int[] mapTileX = tileX(center.getLon(), zoom);
         int[] mapTileY = tileY(center.getLat(), zoom);
 
-        int xPos = (mapTileX[0]<<8)+mapTileX[1]-(mapWidth>>1)+x;
-        int yPos = (mapTileY[0]<<8)+mapTileY[1]-(mapHeight>>1)+y;
-
+        int mask = (1 << (zoom+8))-1;
+        int xPos = ((mapTileX[0]<<8)+mapTileX[1]-(mapWidth>>1)+x) & mask;
+        int yPos = ((mapTileY[0]<<8)+mapTileY[1]-(mapHeight>>1)+y) & mask;
         return new Position(yToLat(yPos, zoom), xToLon(xPos, zoom));
     }
 
+    /**
+     * Converts a WGS84 datum to a position on the map in pixels.
+     *
+     * @param position  The coords that will be translated.
+     * @param center    Current map center in WGS84 datum.
+     * @param mapWidth  Current map width.
+     * @param mapHeight Current map height.
+     * @param zoom      Current map zoom.
+     * @return Position translated to pixels for the given map.
+     */
     public int[] positionToXY(Position position, Position center, int mapWidth,
             int mapHeight, int zoom) {
         int[] mapTileX = tileX(center.getLon(), zoom);
@@ -113,12 +156,20 @@ public class MercatorMap implements IMapProvider {
         return ret;
     }
 
-    /*
+    /**
      * fixme: Prioritize tile loading order, load from center
      * 
      * This could be done by calculating each tile's center position and
      * ordering by distance to map center. Optimize by offsetting map center
      * position by a half tile instead.
+     *
+     * @param center    Current map center in WGS84 datum.
+     * @param width     Current map width.
+     * @param height    Current map height.
+     * @param zoom      Current map zoom factor.
+     * @return Image of size width x height containing a geographical map.
+     * The returned image may be only partially rendered or enirely blank,
+     * depending on availability of map tiles.
      */
     public Object getMap(Position center, int width, int height, int zoom) {
 
@@ -126,29 +177,10 @@ public class MercatorMap implements IMapProvider {
         int[] mapTileX = tileX(center.getLon(), zoom);
         int[] mapTileY = tileY(center.getLat(), zoom);
 
-        // offset in map to center tile
+        // offset in map to center tile's top-left corner.
         int ctx = (width >> 1)-mapTileX[1];
         int cty = (height >> 1)-mapTileY[1];
 
-        /*
-         * Find tile arrangement
-         *
-         * case1 tx1=57 width=240
-         * 57+255 >> 3 = 312 >> 8 = 1
-         * 240-57 >> 3 = 183 >> 8 = 0
-         * case2 tx1=-3
-         * -3+255 >> 8 = 252 >> 8 = 0
-         * 240-3 >> 8 = 237 >> 8 = 0
-         * case3 tx1=0 width=256
-         * 0+255 >> 8 = 0
-         * 255-0 >> 8 = 0
-         * case4 tx1=1 width=256
-         * 1+255 >> 8 = 1
-         * 255-1 >> 8 = 0
-         * case5 tx1=-1 width=256
-         * -1+255 >> 8 = 0
-         * 255--1 >> 8 = 1
-        */
         int tilesLeft = (ctx+255) >> 8;
         int tilesAbove = (cty+255) >> 8;
 
@@ -180,8 +212,12 @@ public class MercatorMap implements IMapProvider {
         return map;
     }
 
-    /*
-     * Returns a string url
+    /**
+     * Make an URL for a given tile.
+     * @param tileX Tile X number.
+     * @param tileY Tile Y number.
+     * @param tileZ Zoom level.
+     * @return an URL for the given tile.
      */
     private String getTileURL(int tileX, int tileY, int tileZ) {
         String s = new String(mapSource);
@@ -191,9 +227,14 @@ public class MercatorMap implements IMapProvider {
         return s;
     }
 
-    /*
+    /**
      * Returns the path to the local tile.
      * It's the callers responsibility to check if the tile exists.
+     *
+     * @param tileX Tile X number.
+     * @param tileY Tile Y number.
+     * @param tileZ Zoom level.
+     * @return a file name for the given tile.
      */
     private String getTilePath(int tileX, int tileY, int tileZ) {
         return mapID+"/"+String.valueOf(tileZ)
@@ -201,8 +242,14 @@ public class MercatorMap implements IMapProvider {
                 +"/"+String.valueOf(tileY)+mapTileFormat;
     }
 
-    /*
+    /**
      * Get tile from image loader.
+     * 
+     * @param tileX
+     * @param tileY
+     * @param tileZ
+     * @return image containing the requested tile, or an empty image if the
+     * tile is queued for download or not retrievable.
      */
     private Object getTile(int tileX, int tileY, int tileZ) {
         // Local storage path
@@ -216,8 +263,10 @@ public class MercatorMap implements IMapProvider {
 
     /*
      * Calculate tile x from longitude.
-     * Returns { tile, offset in tile }
-     * (verified)
+     *
+     * @param lon   The WGS84 longitude to convert.
+     * @param zoom  The current map zoom factor.
+     * @return integer array { tileX, offset in tileX }
      */
     private int[] tileX(double lon, int zoom) {
         int tileX = (int)((lon + 180) / 360 * (1 << (zoom+8)));
@@ -227,8 +276,10 @@ public class MercatorMap implements IMapProvider {
 
     /*
      * Calculate tile y from latitude.
-     * Returns { tile, offset in tile }
-     * (verified)
+     *
+     * @param lat
+     * @param zoom  The current map zoom factor.
+     * @return integer array { tileY, offset in tileY }
      */
     private int[] tileY(double lat, int zoom) {
         lat = lat*Math.PI/180;
@@ -240,10 +291,11 @@ public class MercatorMap implements IMapProvider {
     }
 
     /*
-     * Returns longitude for given tile.tileoffs X value
-     * x is a fixed point int n.8 (8 bits fraction)
+     * Converts an absolute pixel to WGS84 longitude.
      *
-     * fixme: optimize
+     * @param x is the absolute pixel value to convert.
+     * @param zoom The current map zoom factor.
+     * @return WGS84 longitude for x.
      */
     private double xToLon(int x, int zoom) {
         double dx = (double)x/256;
@@ -251,10 +303,11 @@ public class MercatorMap implements IMapProvider {
     }
 
     /*
-     * Returns latitude for given tile+tileoffs Y value
-     * y is a fixed point int n.8 (8 bits fraction)
-     * 
-     * fixme: optimize
+     * Converts an absolute pixel to WGS84 latitude.
+     *
+     * @param y is the absolute pixel value to convert.
+     * @param zoom The current map zoom factor.
+     * @return WGS84 latitude for y.
      */
     private double yToLat(int y, int zoom) {
         double dy = (double)y/256;
