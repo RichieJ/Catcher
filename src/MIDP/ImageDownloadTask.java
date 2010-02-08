@@ -15,7 +15,7 @@ import javax.microedition.lcdui.Image;
 /**
  *
  */
-public class DownloaderTask extends Task {
+public class ImageDownloadTask extends Task {
 
     private final String url;
     private final String localCachePath;
@@ -23,7 +23,7 @@ public class DownloaderTask extends Task {
 
     private Image image;
 
-    public DownloaderTask(String url, String localCachePath, String tempCachePath) {
+    public ImageDownloadTask(String url, String localCachePath, String tempCachePath) {
         this.url = url;
         this.localCachePath = localCachePath;
         this.tempCachePath = tempCachePath;

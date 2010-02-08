@@ -57,7 +57,7 @@ public class MIDPImageLoader implements IImageLoader, TaskCompletedListener {
                 currentDownloads.addElement(url);
             }
 
-            DownloaderTask task = new DownloaderTask(url, localCachePath, localCachePath);
+            ImageDownloadTask task = new ImageDownloadTask(url, localCachePath, localCachePath);
             task.setTaskCompletedListener(this);
             runner.addTask(task);
         } else {
@@ -90,7 +90,7 @@ public class MIDPImageLoader implements IImageLoader, TaskCompletedListener {
     }
 
     public void taskCompleted(Task task) {
-        DownloaderTask dl = (DownloaderTask)task;
+        ImageDownloadTask dl = (ImageDownloadTask)task;
         synchronized (imageCache) {
             imageCache.put(dl.getUrl(), dl.getImage());
         }
