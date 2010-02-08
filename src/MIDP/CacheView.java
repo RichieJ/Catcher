@@ -55,6 +55,8 @@ public class CacheView extends CatcherCanvas implements ICacheView {
 
     public void setCache(Cache cache) {
         this.cache = cache;
+        page = 0;
+        textBox.setText(cache.description);
     }
 
     private int getHeading(Position p) {

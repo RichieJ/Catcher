@@ -6,24 +6,32 @@
  */
 package Caches;
 
+import MIDP.DownloaderTask;
 import System.Cache;
 import System.CacheFilter;
 import System.ICacheProvider;
 import System.Position;
+import Utils.Task;
+import Utils.TaskCompletedListener;
+import Utils.TaskRunner;
 
 
-public class OpenCachingProvider implements ICacheProvider {
+public class OpenCachingProvider implements ICacheProvider, TaskCompletedListener {
 
-    public OpenCachingProvider()
-    {
-        
+    private final TaskRunner runner;
+
+    public OpenCachingProvider() {
+        runner = new TaskRunner("GPXLoader", 2);
+        runner.start();
     }
 
-    public Cache[] findNear(Position position, int radiusKiloMeters, CacheFilter filter) {
+    public Cache[] findNear(Position position, int radiusKiloMeters,
+            CacheFilter filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Cache[] findText(String text, boolean searchCacheNames, boolean searchDescriptions, boolean searchLogs, CacheFilter filter) {
+    public Cache[] findText(String text, boolean searchCacheNames,
+            boolean searchDescriptions, boolean searchLogs, CacheFilter filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -31,4 +39,13 @@ public class OpenCachingProvider implements ICacheProvider {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void taskCompleted(Task task) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void submitQuery() {
+        DownloaderTask task = new DownloaderTask("", "", "");
+        task.setTaskCompletedListener(this);
+        runner.addTask(task);
+    }
 }
