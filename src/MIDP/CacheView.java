@@ -22,6 +22,7 @@ public class CacheView extends CatcherCanvas implements ICacheView {
     private int page=0;
     private static final int PAGE_DESC=0;
     private static final int PAGE_LOGS=1;
+    private TextBox textBox = new TextBox();
 
     public CacheView(IViewNavigator viewNavigator, ViewResources viewResources) {
         super(viewNavigator);
@@ -29,6 +30,7 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         setFullScreenMode(true);
         this.viewResources = viewResources;
         initFakeCache(); // Placeholder
+        textBox.setText(cache.description);
     }
 
     // This is just a placeholder
@@ -75,8 +77,19 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         g.setColor(COLOR_BACKGROUND);
         g.fillRect(0, 0, getWidth(), getHeight()-HEIGHT_STATUSBAR);
         int y = paintCacheAttributes(g);
-        TextBox textBox = new TextBox(0, y, getWidth(), getHeight()-y);
-        textBox.paint(g);
+        textBox.paint(g, 0, y, getWidth(), getHeight()-y);
+    }
+
+    private void nextPage() {
+        ++page;
+        switch(page) {
+            case 1:
+                textBox.setText(cache.lastLogs);
+                break;
+            default:
+                page=0;
+                textBox.setText(cache.description);
+        }
     }
     
     /**
@@ -104,6 +117,20 @@ public class CacheView extends CatcherCanvas implements ICacheView {
      * Called when a key is pressed.
      */
     protected  void keyPressedView(int keyCode) {
+        switch(getGameAction(keyCode)) {
+            case DOWN:
+                textBox.scrollDown();
+                repaint();
+                break;
+            case UP:
+                textBox.scrollUp();
+                repaint();
+                break;
+            case FIRE:
+                nextPage();
+                repaint();
+                break;
+        }
     }
 
     public void activate() {

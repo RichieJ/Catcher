@@ -6,42 +6,29 @@
  */
 package MIDP;
 
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 public class TextBox {
     private int yScroll=0;
-    private Font font = Font.getDefaultFont();
-    private int spaceWidth;
-    private int lineHeight;
-    private int x,y,width,height;
     private String s="";
-    private int nofLines;
-
-    TextBox(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        spaceWidth=font.charWidth(' ');
-        lineHeight=font.getHeight();
-    }
+    private boolean contentsBelowView=false;
 
     public void setText(String s) {
         yScroll = 0;
-        nofLines = 1; // Recalculated when painted. Ugly hack.
-        this.s = s;
+        this.s = s+" "; //Hack: add space to make last word linebreak if needed
     }
 
     public void scrollUp() {
-        yScroll = (++yScroll>nofLines? nofLines:yScroll);
-    }
-
-    public void scrollDown() {
         yScroll = (--yScroll<0? 0:yScroll);
     }
 
-    public void paint(Graphics g) {
+    public void scrollDown() {
+        yScroll = (contentsBelowView? yScroll:++yScroll);
+    }
+
+    public void paint(Graphics g, int x, int y, int width, int height) {
+        int spaceWidth=g.getFont().charWidth(' ');
+        int lineHeight=g.getFont().getHeight();
         g.setClip(x, y, width, height);
         g.setColor(CatcherCanvas.COLOR_BACKGROUND);
         g.fillRect(x, y, width, height);
@@ -50,16 +37,14 @@ public class TextBox {
         int wordWidth;
         int xPos=x;
         int yPos=y-yScroll*lineHeight;
-        nofLines = 0;
         for (int i=0;i<s.length();i++) {
             switch (s.charAt(i)) {
                 case '\n':
                 case ' ':
-                    wordWidth = font.stringWidth(word);
+                    wordWidth = g.getFont().stringWidth(word);
                     if (xPos+wordWidth > width) {
                         xPos = wordWidth+spaceWidth;
                         yPos += lineHeight;
-                        ++nofLines;
                         g.drawString(word, x, yPos, Graphics.TOP|Graphics.LEFT);
                     } else {
                         g.drawString(word, xPos, yPos, Graphics.TOP|Graphics.LEFT);
@@ -69,7 +54,6 @@ public class TextBox {
                     if (s.charAt(i) == '\n') {
                         xPos = x;
                         yPos += lineHeight;
-                        ++nofLines;
                     }
                     break;
                 default:
@@ -77,6 +61,6 @@ public class TextBox {
             }
         }
         g.drawString(word, xPos, yPos, Graphics.TOP|Graphics.LEFT);
-        nofLines -= height/lineHeight;
+        contentsBelowView = (yPos+lineHeight < y+height? true:false);
     }
 }
