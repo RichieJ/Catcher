@@ -6,7 +6,7 @@
  */
 package Caches;
 
-import MIDP.ImageDownloadTask;
+import MIDP.StringDownloadTask;
 import System.Cache;
 import System.CacheFilter;
 import System.ICacheProvider;
@@ -44,7 +44,7 @@ public class OpenCachingProvider implements ICacheProvider, TaskCompletedListene
     }
 
     private void submitQuery() {
-        ImageDownloadTask task = new ImageDownloadTask("", "", "");
+        StringDownloadTask task = new StringDownloadTask("", "", "");
         task.setTaskCompletedListener(this);
         runner.addTask(task);
     }
