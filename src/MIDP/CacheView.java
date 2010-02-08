@@ -59,7 +59,7 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         return 0;
     }
 
-    private void paintCacheAttributes(Graphics g) {
+    private int paintCacheAttributes(Graphics g) {
         int ht = sysFont.getHeight();
         int x = 0;
         int y = 20;
@@ -68,12 +68,15 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         int height = (16>sysFont.getHeight()? 16 : sysFont.getHeight());
         paintCache(g, x, y, width, height, getHeading(cache.position), cache);
         y += sysFont.getHeight();
+        return y;
     }
 
     public void paintView(Graphics g) {
         g.setColor(COLOR_BACKGROUND);
         g.fillRect(0, 0, getWidth(), getHeight()-HEIGHT_STATUSBAR);
-        paintCacheAttributes(g);
+        int y = paintCacheAttributes(g);
+        TextBox textBox = new TextBox(0, y, getWidth(), getHeight()-y);
+        textBox.paint(g);
     }
     
     /**
