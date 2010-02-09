@@ -43,4 +43,27 @@ public class StringUtils {
         }
         return res;
     }
+
+    /**
+     * Decode "&amp;" entities with its proper letter.
+     * @param s: Input string
+     * @return: decoded sting s
+     */
+    private String XMLDecode(String s) {
+        //fixme: not implemented
+        System.out.println("XMLDecode not impl");
+        return s;
+    }
+
+    /**
+     * Decode "&aring;" etc. entities with its proper letter.
+     * @param s: Input string
+     * @return: decoded sting s
+     */
+    private String HTMLDecode(String s) {
+        //fixme: not implemented
+        System.out.println("HTMLDecode not impl");
+        return s;
+    }
+
 }

@@ -9,6 +9,7 @@ package MIDP;
 import GUI.ICacheView;
 import GUI.IViewNavigator;
 import System.Cache;
+import System.GPX;
 import System.Position;
 import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
@@ -35,6 +36,65 @@ public class CacheView extends CatcherCanvas implements ICacheView {
 
     // This is just a placeholder
     private void initFakeCache() {
+
+        // temp debug code start
+
+        // fake gpx waypoint
+        String s = "</wpt>\n"+
+"\n"+
+"	<wpt lat=\"56.12038\" lon=\"12.14503\">\n"+
+"	<time>2003-11-29T00:00:00Z</time>\n"+
+"	<name>OS0000</name>\n"+
+"	<desc>Hej hopp by joser, Virtual Cache (1.0/1.0)</desc>\n"+
+"	<src>www.opencaching.se</src>\n"+
+"	<url>http://www.opencaching.se/viewcache.php?cacheid=0</url>\n"+
+"	<urlname>Hej hopp</urlname>\n"+
+"	<sym>Geocache</sym>\n"+
+"	<type>Geocache|Virtual Cache</type>\n"+
+"	<geocache status=\"Available\" xmlns=\"http://geocaching.com.au/geocache/1\">\n"+
+"			<name>Hej hopp</name>\n"+
+"			<owner>joser</owner>\n"+
+"			<locale></locale>\n"+
+"			<state></state>\n"+
+"			<country>United Kingdom</country>\n"+
+"			<type>Virtual</type>\n"+
+"			<container>Virtual</container>\n"+
+"			<difficulty>1.0</difficulty>\n"+
+"			<terrain>1.0</terrain>\n"+
+"			<summary html=\"false\">Kort beskrivning.ÅäÖ</summary>\n"+
+"			<description html=\"true\">Denna i&amp;ouml;gonfallande cachen finns inte.\n"+
+"&lt;br&gt;</description>\n"+
+"			\n"+
+"			<licence></licence>\n"+
+"			<logs>\n"+
+"				\n"+
+"<log id=\"80\">\n"+
+"	<time>2009-12-30T00:00:00Z</time>\n"+
+"	<geocacher>joser</geocacher>\n"+
+"	<type>Note</type>\n"+
+"	<text>&amp;nbsp;F&amp;ouml;lj med\n"+
+"</text>\n"+
+"</log>\n"+
+"\n"+
+"\n"+
+"<log id=\"79\">\n"+
+"	<time>2009-12-30T00:00:00Z</time>\n"+
+"	<geocacher>banan</geocacher>\n"+
+"	<type>Found</type>\n"+
+"	<text>30.12.2009\n"+
+"09:08:08\n"+
+"F&amp;ouml;rsta loggen.&amp;nbsp;\n"+
+"</text>\n"+
+"</log>\n"+
+"\n"+
+"\n"+
+"			</logs>\n"+
+"		</geocache>\n"+
+"	</wpt>\n"+
+"\n";
+        GPX.parse(s);
+        // temp debug code end
+
         cache = new Cache();
         cache.name="Catcher fake cache placeholder";
         cache.code="OC3G4F5";

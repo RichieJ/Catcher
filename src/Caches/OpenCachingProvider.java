@@ -7,6 +7,7 @@
 package Caches;
 
 import MIDP.StringDownloadTask;
+import System.GPX;
 import System.Cache;
 import System.CacheFilter;
 import System.ICacheProvider;
@@ -16,7 +17,8 @@ import Utils.TaskCompletedListener;
 import Utils.TaskRunner;
 
 
-public class OpenCachingProvider implements ICacheProvider, TaskCompletedListener {
+public class OpenCachingProvider implements ICacheProvider,
+        TaskCompletedListener {
 
     private final TaskRunner runner;
 
@@ -39,13 +41,19 @@ public class OpenCachingProvider implements ICacheProvider, TaskCompletedListene
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * taskCompleted gets called when a http request completes.
+     * @param task
+     */
     public void taskCompleted(Task task) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        StringDownloadTask dl = (StringDownloadTask)task;
+        GPX.parse(dl.getString());
     }
 
-    private void submitQuery() {
-        StringDownloadTask task = new StringDownloadTask("", "", "");
+    private void httpLoad(String url) {
+        StringDownloadTask task = new StringDownloadTask(url);
         task.setTaskCompletedListener(this);
         runner.addTask(task);
     }
+
 }
