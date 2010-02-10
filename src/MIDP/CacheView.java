@@ -40,58 +40,43 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         // temp debug code start
 
         // fake gpx waypoint
-        String s = "</wpt>\n"+
-"\n"+
-"	<wpt lat=\"56.12038\" lon=\"12.14503\">\n"+
-"	<time>2003-11-29T00:00:00Z</time>\n"+
-"	<name>OS0000</name>\n"+
-"	<desc>Hej hopp by joser, Virtual Cache (1.0/1.0)</desc>\n"+
-"	<src>www.opencaching.se</src>\n"+
-"	<url>http://www.opencaching.se/viewcache.php?cacheid=0</url>\n"+
-"	<urlname>Hej hopp</urlname>\n"+
-"	<sym>Geocache</sym>\n"+
-"	<type>Geocache|Virtual Cache</type>\n"+
-"	<geocache status=\"Available\" xmlns=\"http://geocaching.com.au/geocache/1\">\n"+
-"			<name>Hej hopp</name>\n"+
-"			<owner>joser</owner>\n"+
-"			<locale></locale>\n"+
-"			<state></state>\n"+
-"			<country>United Kingdom</country>\n"+
-"			<type>Virtual</type>\n"+
-"			<container>Virtual</container>\n"+
-"			<difficulty>1.0</difficulty>\n"+
-"			<terrain>1.0</terrain>\n"+
-"			<summary html=\"false\">Kort beskrivning.ÅäÖ</summary>\n"+
-"			<description html=\"true\">Denna i&amp;ouml;gonfallande cachen finns inte.\n"+
-"&lt;br&gt;</description>\n"+
-"			\n"+
-"			<licence></licence>\n"+
-"			<logs>\n"+
-"				\n"+
-"<log id=\"80\">\n"+
-"	<time>2009-12-30T00:00:00Z</time>\n"+
-"	<geocacher>joser</geocacher>\n"+
-"	<type>Note</type>\n"+
-"	<text>&amp;nbsp;F&amp;ouml;lj med\n"+
-"</text>\n"+
-"</log>\n"+
-"\n"+
-"\n"+
-"<log id=\"79\">\n"+
-"	<time>2009-12-30T00:00:00Z</time>\n"+
-"	<geocacher>banan</geocacher>\n"+
-"	<type>Found</type>\n"+
-"	<text>30.12.2009\n"+
-"09:08:08\n"+
-"F&amp;ouml;rsta loggen.&amp;nbsp;\n"+
-"</text>\n"+
-"</log>\n"+
-"\n"+
-"\n"+
-"			</logs>\n"+
-"		</geocache>\n"+
-"	</wpt>\n"+
-"\n";
+String s = 
+"<wpt lat=\"58.23347\" lon=\"14.63824\">\n"+
+"<time>2003-12-13T00:00:00</time>\n"+
+"<name>OS0000</name>\n"+
+"<desc>Cachename by placedby, Traditional Cache (2/1.5)</desc>\n"+
+"<url>http://www.opencaching.se/viewcache.php?cacheid=0</url>\n"+
+"<urlname>Cachename by placedby, Traditional Cache</urlname>\n"+
+"<sym>Geocache</sym>\n"+
+"<type>Geocache</type>\n"+
+"<groundspeak:cache id=\"0\" available=\"True\" archived=\"False\" xmlns:groundspeak=\"http://www.groundspeak.com/cache/1/0\">\n"+
+"  <groundspeak:name>Cachename</groundspeak:name>\n"+
+"  <groundspeak:placed_by>placedby</groundspeak:placed_by>\n"+
+"  <groundspeak:owner id=\"0\">owner</groundspeak:owner>\n"+
+"  <groundspeak:type>Traditional Cache</groundspeak:type>\n"+
+"  <groundspeak:container>Regular</groundspeak:container>\n"+
+"  <groundspeak:attributes>\n"+
+"    <groundspeak:attribute id=\"25\" inc=\"1\">Parkering i närheten</groundspeak:attribute>\n"+
+"    <groundspeak:attribute id=\"26\" inc=\"1\">Nåbar med allmänna kommunikationer</groundspeak:attribute>\n"+
+"  </groundspeak:attributes>\n"+
+"  <groundspeak:difficulty>2</groundspeak:difficulty>\n"+
+"  <groundspeak:terrain>1.5</groundspeak:terrain>\n"+
+"  <groundspeak:country>Sweden</groundspeak:country>\n"+
+"  <groundspeak:state></groundspeak:state>\n"+
+"  <groundspeak:short_description html=\"False\">short desc.</groundspeak:short_description>\n"+
+"  <groundspeak:long_description html=\"True\">Long desc\n"+
+"&lt;br&gt;</groundspeak:long_description>\n"+
+"  <groundspeak:encoded_hints>Under sten</groundspeak:encoded_hints>\n"+
+"  <groundspeak:logs>\n"+
+"    <groundspeak:log id=\"0\">\n"+
+"      <groundspeak:date>2010-03-15T00:00:00</groundspeak:date>\n"+
+"      <groundspeak:type>Found it</groundspeak:type>\n"+
+"      <groundspeak:finder id=\"0\">finding_user</groundspeak:finder>\n"+
+"      <groundspeak:text encoded=\"False\">Tack för cachen.</groundspeak:text>\n"+
+"    </groundspeak:log>\n"+
+"  </groundspeak:logs>\n"+
+"</groundspeak:cache>\n"+
+"</wpt>";
         GPX.parse(s);
         // temp debug code end
 
