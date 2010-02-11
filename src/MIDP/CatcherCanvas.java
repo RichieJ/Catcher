@@ -127,8 +127,10 @@ public abstract class CatcherCanvas extends Canvas {
                 Graphics.TOP|Graphics.RIGHT);
 
         // Draws a set of squares to indicate cache health based on latest logs
-        for (int i=0;i<cache.lastLogsType.length;i++) {
-            g.setColor(COLOR_LOG[cache.lastLogsType[i]]);
+        int lc = cache.logs.length;
+        if (lc > 4) lc = 4;
+        for (int i=0;i<lc;i++) {
+            g.setColor(COLOR_LOG[cache.logs[i].type]);
             g.fillRect(x+16, y+(i<<2), 4, 4);
         }
 

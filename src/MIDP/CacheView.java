@@ -9,14 +9,15 @@ package MIDP;
 import GUI.ICacheView;
 import GUI.IViewNavigator;
 import System.Cache;
+import System.CacheLog;
 import System.GPX;
 import System.Position;
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 public class CacheView extends CatcherCanvas implements ICacheView {
 
     private Cache cache;
+
 
     // Careful when changing globalItems! menuAction() assumes a certain order!
     private String[] viewItems = {"Cache list", "Set nearest", "Show hint"};
@@ -31,7 +32,7 @@ public class CacheView extends CatcherCanvas implements ICacheView {
         setFullScreenMode(true);
         this.viewResources = viewResources;
         initFakeCache(); // Placeholder
-        textBox.setText(cache.description);
+        textBox.setText(cache.fullDesc());
     }
 
     // This is just a placeholder
@@ -80,18 +81,23 @@ String s =
         GPX.parse(s);
         // temp debug code end
 
-        cache = new Cache();
-        cache.name="Catcher fake cache placeholder";
+        if (cache == null) {
+            cache = new Cache();
+        }
         cache.code="OC3G4F5";
         cache.difficulty=0;
         cache.terrain=0;
-        cache.type=cache.CT_REGULAR;
-        cache.position= new Position(57.1, 14.8);
-        cache.description="This is the description of the cache.";
+        cache.type=cache.CT_TRADITIONAL;
+        cache.shortDesc="This is the summary of the cache.";
+        cache.longDesc = "This is the long description.";
         cache.hint="Under sten";
-        cache.lastLogs="TFTC\n";
-        int[] type={0,1};
-        cache.lastLogsType=type;
+        //cache.logs[]
+        CacheLog[] logs = new CacheLog[2];
+        logs[0] = new CacheLog(0, 0, "joser1", "TFTC!\n");
+        logs[1] = new CacheLog(0, 0, "joser2", "10x for this one. It had me searching for ages until I finally spotted it.\ndropped tb");
+        cache.logs = logs;
+        cache.name="Catcher fake cache placeholder";
+        cache.position= new Position(57.1, 14.8);
     }
 
     public Cache getCache() {
@@ -101,7 +107,7 @@ String s =
     public void setCache(Cache cache) {
         this.cache = cache;
         page = 0;
-        textBox.setText(cache.description);
+        textBox.setText(cache.fullDesc());
     }
 
     private int getHeading(Position p) {
@@ -115,6 +121,7 @@ String s =
         int width = getWidth();
         int tl = Graphics.TOP|Graphics.LEFT;
         int height = (16>sysFont.getHeight()? 16 : sysFont.getHeight());
+
         paintCache(g, x, y, width, height, getHeading(cache.position), cache);
         y += sysFont.getHeight();
         return y;
@@ -131,11 +138,15 @@ String s =
         ++page;
         switch(page) {
             case 1:
-                textBox.setText(cache.lastLogs);
+                String s = "";
+                for (int i = 0; i<cache.logs.length; i++) {
+                    s += cache.logs[i].name+": "+cache.logs[i].log+'\n';
+                }
+                textBox.setText(s);
                 break;
             default:
                 page=0;
-                textBox.setText(cache.description);
+                textBox.setText(cache.fullDesc());
         }
     }
     
