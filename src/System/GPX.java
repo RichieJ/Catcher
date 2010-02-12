@@ -19,10 +19,9 @@ public abstract class GPX {
      * @return value of attribute, or null if not found.
      */
     private static String tagAttribute(String tag, String name) {
-        int start = tag.indexOf(name);
-        int a = tag.indexOf('"', start)+1;
+        int a = tag.indexOf('"', tag.indexOf(name))+1;
         int b = tag.indexOf('"', a+1);
-        if (start < 0 || a < 1 || b < 0) return null;
+        if (a >= b) return "";
         System.out.println("tagAttribute: "+ tag.substring(a, b));
         return tag.substring(a, b);
     }
@@ -50,6 +49,7 @@ public abstract class GPX {
     private static String startTag(String xml, String tag) {
         int a = xml.indexOf('<'+tag);
         int b = xml.indexOf('>', a);
+        if (a >= b) return "";
         System.out.println("startTag: "+ xml.substring(a, b+1));
         return xml.substring(a, b+1);
     }
@@ -63,14 +63,73 @@ public abstract class GPX {
     private static String tagContents(String xml, String tag) {
         int a = xml.indexOf('>', xml.indexOf('<'+tag))+1;
         int b = xml.indexOf('<', a);
+        if (a >= b) return "";
         System.out.println("tagContents ("+tag+"): "+ xml.substring(a, b));
         return xml.substring(a, b);
     }
 
+    /**
+     * Get a tag pair and everything inside them.
+     * @param xml is a string with xml markup.
+     * @param tag is the name of the tag to return.
+     * @return the tag pair and its contents.
+     */
+    private static String tag(String xml, String tag) {
+        int a = xml.indexOf('<'+tag);
+        int b = xml.indexOf('>', xml.indexOf("</"+tag));
+        System.out.println(String.valueOf(a)+'-'+String.valueOf(b));
+        if (a >= b) return "";
+        System.out.println("tag ("+tag+"): "+ xml.substring(a, b));
+        return xml.substring(a, b);
+    }
+
+    /**
+     * Remove html-tags from a string.
+     * @param html is the string to strip.
+     * @return string with its tags removed.
+     */
     private static String stripHTML(String html) {
         System.out.println("stripHTML not impl");
         return html;
     }
+
+
+    private static Cache parseCache(String gc) {
+        String gs = "groundspeak:";
+        Cache c = new Cache();
+        String tag = startTag(gc, gs+"cache");
+        c.available = tagAttributeBool(tag, "available");
+        c.setType(tagContents(gc, gs+"type"));
+        c.placedBy = tagContents(gc, gs+"placed_by");
+        c.setDifficulty(tagContents(gc, gs+"difficulty"));
+        c.setTerrain(tagContents(gc, gs+"terrain"));
+        c.setContainer(tagContents(gc, gs+"container"));
+        c.shortDesc = tagContents(gc, gs+"short_description");
+        if (tagAttributeBool(
+                startTag(gc, gs+"short_description"), "html")) {
+            c.shortDesc = stripHTML(c.shortDesc);
+        }
+        c.longDesc = tagContents(gc, gs+"long_description");
+        if (tagAttributeBool(
+                startTag(gc, gs+"long_description"), "html")) {
+            c.longDesc = stripHTML(c.longDesc);
+        }
+        c.hint = tagContents(gc, gs+"encoded_hints");
+
+        // wayPoints
+        /* Waypoints to the cache are stored as regular waypoints independent
+         * of the cache's waypoint, except for the waymarking id.
+         * They are also at the end of longDesc, in a table if html=true,
+         * else in plain text with line breaks.
+         * Search for "Additional Hidden Waypoints" and parse everything after.
+         */
+
+        // Logs
+
+        // Attributes
+        return c;
+    }
+
     /**
      * Parses an xml-document formatted as defined in
      * http://www.topografix.com/GPX/1/0/gpx.xsd
@@ -86,58 +145,46 @@ public abstract class GPX {
         int entryStart;
         int entryEnd = 0;
         double lat, lon;
-        /* while entryStart... (for now we decode the first cache only)
-         * contain try-except clause in while loop, that way only single caches
-         * are dropped instead of remaining gpx data.
-         */
-        try {
-            Cache cache = new Cache();
 
-            // Get next wpt tag
-            entryStart = gpx.indexOf("<wpt", entryEnd);
-            entryEnd = gpx.indexOf("</wpt>", entryStart);
-            String wpt = gpx.substring(entryStart, entryEnd);
-
-            String tag = startTag(wpt, "wpt");
-            System.out.println("tag = "+tag);
-
-            lat = Double.parseDouble(tagAttribute(tag, "lat"));
-            lon = Double.parseDouble(tagAttribute(tag, "lon"));
-            Position position = new Position(lat, lon);
-
-            String name = tagContents(wpt, "name");
-            String type = tagContents(wpt, "type");
-
-            if (type.compareTo("Geocache") == 0) {
-                System.out.println("GPX.parse: contains a cache");
-                String gs = "groundspeak:";
-                tag = startTag(wpt, gs+"cache");
-                boolean available = tagAttributeBool(tag, "available");
-                int cacheType = Cache.stringToType(tagContents(wpt, gs+"type"));
-                String placedBy = tagContents(wpt, gs+"placed_by");
-                String difficulty = tagContents(wpt, gs+"difficulty");
-                String terrain = tagContents(wpt, gs+"terrain");
-                String container = tagContents(wpt, gs+"container");
-                String cachetype = tagContents(wpt, gs+"type");
-                String shortDesc = tagContents(wpt, gs+"short_description");
-                if (tagAttributeBool(
-                        startTag(wpt, gs+"short_description"), "html")) {
-                    shortDesc = stripHTML(shortDesc);
+        boolean last = false;
+        while (!last) { //fixme: this is ugly!
+            try {
+                // Get next wpt tag, break if there are no more waypoints.
+                entryStart = gpx.indexOf("<wpt", entryEnd);
+                entryEnd = gpx.indexOf("</wpt", entryStart);
+                if (entryStart < 0 || entryStart >= entryEnd) {
+                    last = true;
+                    break;
                 }
-                String longDesc = tagContents(wpt, gs+"long_description");
-                if (tagAttributeBool(
-                        startTag(wpt, gs+"long_description"), "html")) {
-                    longDesc = stripHTML(longDesc);
+
+                String wpt = gpx.substring(entryStart, entryEnd);
+
+                String tag = startTag(wpt, "wpt");
+                System.out.println("tag = "+tag);
+
+                lat = Double.parseDouble(tagAttribute(tag, "lat"));
+                lon = Double.parseDouble(tagAttribute(tag, "lon"));
+                Position position = new Position(lat, lon);
+
+                String name = tagContents(wpt, "name");
+                String type = tagContents(wpt, "type");
+
+                if (type.compareTo("Geocache") == 0) {
+                    Cache c = parseCache(tag(wpt, "groundspeak:cache"));
+                    c.position = position;
+                    c.code = name;
+                    // cacheStore.add(c);
+                } else {
+                    // waypoint
+                    //wp.name = name;
+                    //wp.desc = tagContents(wpt, "desc");
+                    //wp.position = position;
+                    //wayPointStore.add(wp);
                 }
-                String hint = tagContents(wpt, gs+"encoded_hints");
+            } catch (Exception e) {
+                System.out.println("GPX Exception: "
+                        + e.getMessage());
             }
-
-
-            
-            // add cache to cache array here if no exceptions were triggered
-        } catch (Exception e) {
-            System.out.println("GPX Exception: "
-                    + e.getMessage());
         }
         return null;
     }
