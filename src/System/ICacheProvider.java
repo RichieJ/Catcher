@@ -10,8 +10,8 @@ package System;
 
 public interface ICacheProvider {
 
-    Cache[] findNear(Position position, int radiusKiloMeters, CacheFilter filter);
-    Cache[] findText(String text, boolean searchCacheNames, boolean searchDescriptions, boolean searchLogs, CacheFilter filter);
-    Cache[] findByOwner(String ownerID, CacheFilter filter);
+    void findNear(CacheStore cs, Position position, int radiusKiloMeters, CacheFilter filter);
+    void findText(CacheStore cs, String text, boolean searchCacheNames, boolean searchDescriptions, boolean searchLogs, CacheFilter filter);
+    void findByOwner(CacheStore cs, String ownerID, CacheFilter filter);
 
 }

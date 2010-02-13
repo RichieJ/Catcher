@@ -8,15 +8,30 @@ package Caches;
 
 import MIDP.StringDownloadTask;
 import System.GPX;
-import System.Cache;
 import System.CacheFilter;
+import System.CacheStore;
 import System.ICacheProvider;
 import System.Position;
 import Utils.Task;
 import Utils.TaskCompletedListener;
 import Utils.TaskRunner;
 
-
+/**
+ * OpenCaching is a cache service with individual sites for different countries.
+ *
+ * There are many ways to get caches from Open Caching. The ones that makes most
+ * sense to us are GPX and LOC.
+ * GPX - An xml format, very detailed data for each cache, including logs,
+ *       attributes and waypoints.
+ * LOC - An xml format with very sparse info. This would suit us if it included
+ *       cache type.
+ *
+ * This leaves us with GPX which we need to support anyway.
+ *
+ * In order to save memory it would probably make sense to just store the
+ * crucial information from searches, and request a new GPX for each cache that
+ * gets selected.
+ */
 public class OpenCachingProvider implements ICacheProvider,
         TaskCompletedListener {
 
@@ -27,17 +42,17 @@ public class OpenCachingProvider implements ICacheProvider,
         runner.start();
     }
 
-    public Cache[] findNear(Position position, int radiusKiloMeters,
+    public void findNear(CacheStore cs, Position position, int radiusKiloMeters,
             CacheFilter filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Cache[] findText(String text, boolean searchCacheNames,
-            boolean searchDescriptions, boolean searchLogs, CacheFilter filter) {
+    public void findText(CacheStore cs, String text, boolean searchCacheNames,
+            boolean searchDescriptions, boolean searchLogs, CacheFilter filter){
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Cache[] findByOwner(String ownerID, CacheFilter filter) {
+    public void findByOwner(CacheStore cs, String ownerID, CacheFilter filter) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
