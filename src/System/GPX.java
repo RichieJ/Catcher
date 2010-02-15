@@ -9,6 +9,9 @@ package System;
 /**
  * Helper class to parse gpx files into something usable.
  * GPX-files are cache data defined in an xml-schema.
+ *
+ * This class is an ugly mess, makes assumptions and will break on malformed
+ * input!!!
  */
 public abstract class GPX {
     
@@ -79,8 +82,8 @@ public abstract class GPX {
         int b = xml.indexOf('>', xml.indexOf("</"+tag));
         System.out.println(String.valueOf(a)+'-'+String.valueOf(b));
         if (a >= b) return "";
-        System.out.println("tag ("+tag+"): "+ xml.substring(a, b));
-        return xml.substring(a, b);
+        System.out.println("tag ("+tag+"): "+ xml.substring(a, b+1));
+        return xml.substring(a, b+1);
     }
 
     /**
@@ -89,10 +92,45 @@ public abstract class GPX {
      * @return string with its tags removed.
      */
     private static String stripHTML(String html) {
-        System.out.println("stripHTML not impl");
-        return html;
+        html = StringUtils.replaceAll(html, "</p>", "\n");
+        String os = "";
+        for (int i=0;i<html.length();i++) {
+            boolean inTag = false;
+            switch (html.charAt(i)) {
+                case '<': inTag=true;break;
+                case '>': inTag=false;break;
+                default:
+                    if (!inTag) {
+                        os+=html.charAt(i);
+                    }
+            }
+        }
+        return os;
     }
 
+    /**
+     * Parses log section of a cache.
+     * @param cl: The log data
+     * @return an array of CacheLog objects.
+     */
+    private static CacheLog[] parseCacheLogs(String cl) {
+        int logCount = StringUtils.subStrCount(cl, "<groundspeak:log ");
+        System.out.println(logCount);
+        CacheLog[] logs = new CacheLog[logCount];
+        int start = 0;
+        int end = 0;
+        for (int i=0; i<logCount; i++) {
+            start = cl.indexOf("<groundspeak:log ", end);
+            end = cl.indexOf("</groundspeak:log", start);
+            String xml = cl.substring(start, end);
+            String type = tagContents(xml, "groundspeak:type");
+            String date = tagContents(xml, "groundspeak:date");
+            String name = tagContents(xml, "groundspeak:finder");
+            String log = tagContents(xml, "groundspeak:text");
+            logs[i] = new CacheLog(type, date, name, log);
+        }
+        return logs;
+    }
 
     private static Cache parseCache(String gc) {
         String gs = "groundspeak:";
@@ -125,6 +163,7 @@ public abstract class GPX {
          */
 
         // Logs
+        c.logs = parseCacheLogs(tag(gc, "groundspeak:logs"));
 
         // Attributes
         return c;

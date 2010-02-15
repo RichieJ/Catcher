@@ -8,12 +8,16 @@ Settings:
 
 MercatorMap:
   * introduce metersPerPixel()
-  * MercatorMap should wrap the map at it's edges!
   *in the current model, the MercatorMap requests tiles to render a map at every repaint. We should change it so that we have a tile composition that is clipped to the requested dimension.
 
-StringUtils:
-  * replace currently returns null if it fails to find the substring, this might be the wrong approach.
+---------------
+Notes:
+URL's to cache listing by cache code:
+http://opencaching.se/viewcache.php?wp=[cacheCode]
+http://www.geocaching.com/seek/cache_details.aspx?wp=[cacheCode]
 
+URL's to cache GPX by cache id:
+http://opencaching.se/search.php?searchto=searchbycacheid&showresult=1&f_inactive=0&f_ignored=0&f_userfound=0&f_userowner=0&f_watched=0&startat=0&cacheid=47&output=gpxgc
 
 
 Flow according to TC

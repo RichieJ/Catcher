@@ -15,9 +15,17 @@ public class CacheLog {
     public String name;
     public String log;
 
-    public CacheLog(int type, long dateStamp, String name, String log) {
-        this.type=type;
-        this.dateStamp = dateStamp;
+    private static int strToType(String sType) {
+        return 0; //fixme: not impl
+    }
+
+    private static int strToDate(String sDate) {
+        return 0; //fixme: not impl
+    }
+
+    public CacheLog(String type, String dateStamp, String name, String log) {
+        this.type = strToType(type);
+        this.dateStamp = strToDate(dateStamp);
         this.name = name;
         this.log = log;
     }

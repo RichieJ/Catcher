@@ -87,14 +87,13 @@ String s =
         cache.code="OC3G4F5";
         cache.difficulty=0;
         cache.terrain=0;
-        cache.type=cache.CT_TRADITIONAL;
+        cache.setType("Trad");
         cache.shortDesc="This is the summary of the cache.";
         cache.longDesc = "This is the long description.";
         cache.hint="Under sten";
-        //cache.logs[]
         CacheLog[] logs = new CacheLog[2];
-        logs[0] = new CacheLog(0, 0, "joser1", "TFTC!\n");
-        logs[1] = new CacheLog(0, 0, "joser2", "10x for this one. It had me searching for ages until I finally spotted it.\ndropped tb");
+        logs[0] = new CacheLog("", "", "joser1", "TFTC!\n");
+        logs[1] = new CacheLog("", "", "joser2", "10x for this one. It had me searching for ages until I finally spotted it.\ndropped tb");
         cache.logs = logs;
         cache.name="Catcher fake cache placeholder";
         cache.position= new Position(57.1, 14.8);
